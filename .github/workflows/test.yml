@@ -43,54 +43,54 @@ jobs:
           curl -sL https://github.com/bytecodealliance/wasmtime/releases/download/v28.0.0/wasmtime-v28.0.0-x86_64-linux.tar.xz -o wasmtime.tar.xz
           tar xvf wasmtime.tar.xz -C /opt
           /opt/wasmtime-v28.0.0-x86_64-linux/wasmtime ./wasiout/TestApp.wasm
-      # - name: Check out wabt
-      #   uses: actions/checkout@v4
-      #   with:
-      #     repository: WebAssembly/wabt
-      #     path: wabt
-      #     ref: 1.0.36
-      # - name: Download wabt binaries
-      #   run: |
-      #     curl -sL https://github.com/WebAssembly/wabt/releases/download/1.0.36/wabt-1.0.36-ubuntu-20.04.tar.gz -o wabt.tar.gz
-      #     tar xvf wabt.tar.gz -C /opt
-      #     wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-      #     sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
-      # - name: Convert to C with wasm2c
-      #   run: |
-      #     /opt/wabt-1.0.36/bin/wasm2c ./wasiout/unbundled-module0.wasm -o ./wabt/wasm2c/unbundled-module0.c
-      #     /opt/wabt-1.0.36/bin/wasm2c ./wasiout/unbundled-module1.wasm -o ./wabt/wasm2c/unbundled-module1.c
-      - name: Check out w2c2
+      - name: Check out wabt
         uses: actions/checkout@v4
         with:
-          repository: turbolent/w2c2
-          path: w2c2
-      - name: Build w2c2
-        working-directory: w2c2
+          repository: WebAssembly/wabt
+          path: wabt
+          ref: 1.0.36
+      - name: Download wabt binaries
         run: |
-          sudo apt-get update && sudo apt-get install -y build-essential
-          cmake -B build
-          cmake --build build
-          cd wasi
-          cmake -B build
-          cmake --build build
-      - name: Convert to C with w2c2
-        working-directory: w2c2
+          curl -sL https://github.com/WebAssembly/wabt/releases/download/1.0.36/wabt-1.0.36-ubuntu-20.04.tar.gz -o wabt.tar.gz
+          tar xvf wabt.tar.gz -C /opt
+          wget http://archive.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+          sudo dpkg -i libssl1.1_1.1.0g-2ubuntu4_amd64.deb
+      - name: Convert to C with wasm2c
         run: |
-          ./build/w2c2/w2c2 $GITHUB_WORKSPACE/wasiout/unbundled-module0.wasm ./w2c2/unbundled-module0.c
-          ./build/w2c2/w2c2 $GITHUB_WORKSPACE/wasiout/unbundled-module1.wasm ./w2c2/unbundled-module1.c
-          cp $GITHUB_WORKSPACE/testapp/w2c2_main.c ./w2c2/w2c2_main.c
+          /opt/wabt-1.0.36/bin/wasm2c ./wasiout/unbundled-module0.wasm -o ./wabt/wasm2c/unbundled-module0.c
+          /opt/wabt-1.0.36/bin/wasm2c ./wasiout/unbundled-module1.wasm -o ./wabt/wasm2c/unbundled-module1.c
+      # - name: Check out w2c2
+      #   uses: actions/checkout@v4
+      #   with:
+      #     repository: turbolent/w2c2
+      #     path: w2c2
+      # - name: Build w2c2
+      #   working-directory: w2c2
+      #   run: |
+      #     sudo apt-get update && sudo apt-get install -y build-essential
+      #     cmake -B build
+      #     cmake --build build
+      #     cd wasi
+      #     cmake -B build
+      #     cmake --build build
+      # - name: Convert to C with w2c2
+      #   working-directory: w2c2
+      #   run: |
+      #     ./build/w2c2/w2c2 $GITHUB_WORKSPACE/wasiout/unbundled-module0.wasm ./w2c2/unbundled-module0.c
+      #     ./build/w2c2/w2c2 $GITHUB_WORKSPACE/wasiout/unbundled-module1.wasm ./w2c2/unbundled-module1.c
+      #     cp $GITHUB_WORKSPACE/testapp/w2c2_main.c ./w2c2/w2c2_main.c
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: source
           path: |
-            # ./wabt/wasm2c
-            ./w2c2/w2c2
-      # - name: Compile wasm2c-generated code
-      #   working-directory: ./wabt/wasm2c
-      #   run: |
-      #     clang unbundled-module0.c unbundled-module1.c wasm-rt-impl.c wasm-rt-mem-impl.c -lm -o TestApp.bin
-      - name: Compile w2c2-generated code
-        working-directory: ./w2c2/w2c2
+            ./wabt/wasm2c
+            # ./w2c2/w2c2
+      - name: Compile wasm2c-generated code
+        working-directory: ./wabt/wasm2c
         run: |
-          clang unbundled-module0.c unbundled-module1.c w2c2_main.c -o TestApp.bin
+          clang unbundled-module0.c unbundled-module1.c wasm-rt-impl.c wasm-rt-mem-impl.c -lm -o TestApp.bin
+      # - name: Compile w2c2-generated code
+      #   working-directory: ./w2c2/w2c2
+      #   run: |
+      #     clang unbundled-module0.c unbundled-module1.c w2c2_main.c -o TestApp.bin
